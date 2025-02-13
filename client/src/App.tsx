@@ -1,6 +1,6 @@
 import TicketModal from "./TicketModal";
 import { useEffect } from "react";
-import { getAccessToken } from "./Utilities/tokens.js";
+import { getAccessToken } from "./utilities/tokens";
 
 function App() {
   useEffect(() => {

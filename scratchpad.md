@@ -1,12 +1,10 @@
-# Registered App
-- https://api-console.zoho.com/client/1000.I7QA4HHXQOTME6Y0GFO8VVXVGMR00X
-
-
-# ManageEngine API documentation
+# Important Sources
 - https://www.manageengine.com/products/service-desk/sdpod-v3-api/getting-started/oauth-2.0.html#scopes
+- https://axios-http.com/docs/req_config 
+- 
 
-### Scope
-SDPOnDemand.requests.CREATE
+______________________
+
 
 #### Other Docs
 - https://www.manageengine.com/products/service-desk/sdpod-v3-api/getting-started/oauth-2.0.html  

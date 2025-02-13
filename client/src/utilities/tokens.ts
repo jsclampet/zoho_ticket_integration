@@ -4,12 +4,19 @@ const refresh_token = import.meta.env.VITE_REFRESH_TOKEN;
 const client_id = import.meta.env.VITE_CLIENT_ID;
 const client_secret = import.meta.env.VITE_CLIENT_SECRET;
 
-const isTokenValid = (accessToken) => {};
+interface AccessTokenResponse {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+}
 
-export const getAccessToken = async () => {
+// const isTokenValid = (accessToken: string) =>  {};
+
+export const getAccessToken = async (): Promise<AccessTokenResponse | void> => {
   const response = await axios({
     method: "post",
-    baseURL: "https://accounts.zoho.com/oauth/v2/token?",
+    url: "https://accounts.zoho.com/oauth/v2/token?",
+    withCredentials: false,
     params: {
       refresh_token,
       grant_type: "refresh_token",
@@ -22,4 +29,4 @@ export const getAccessToken = async () => {
   console.log(response);
 };
 
-export default getAccessToken;
+getAccessToken();

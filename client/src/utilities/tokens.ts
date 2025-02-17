@@ -13,18 +13,7 @@ interface AccessTokenResponse {
 // const isTokenValid = (accessToken: string) =>  {};
 
 export const getAccessToken = async (): Promise<AccessTokenResponse | void> => {
-  const response = await axios({
-    method: "post",
-    url: "https://accounts.zoho.com/oauth/v2/token?",
-    withCredentials: false,
-    params: {
-      refresh_token,
-      grant_type: "refresh_token",
-      client_id,
-      client_secret,
-      scope: "SDPOnDemand.requests.ALL",
-    },
-  });
+  const response = await axios.get('http://localhost:3069/gettoken');
 
   console.log(response);
 };

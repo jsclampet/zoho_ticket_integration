@@ -1,6 +1,7 @@
 require("dotenv/config");
 const axios = require("axios");
 const express = require("express");
+const dayjs = require("dayjs");
 const port = process.env.PORT | 3005;
 const refresh_token = process.env.REFRESH_TOKEN;
 const cors = require("cors");
@@ -26,25 +27,22 @@ app.get("/getToken", async (req, res) => {
       "https://accounts.zoho.com/oauth/v2/token",
       encodedParams
     );
-    res.json({ access_token: response.data.access_token });
+
+    const created = dayjs().format("M/D/YY HH:mm");
+    const expiry = dayjs().add(55, "minute").format("M/D/YY HH:mm");
+    const access_token = response.data.access_token;
+
+    console.log({ response, created, expiry });
+
+    res.status(200);
+    res.json({
+      access_token,
+      created,
+      expiry,
+    });
   } catch (err) {
-    console.log(err.message);
     console.log(err);
     res.json({ error_message: err.message, status: err.status });
-  }
-});
-
-app.get("/", async (req, res) => {
-  try {
-    const response = await axios.post(
-      "https://accounts.zoho.com/oauth/v2/token",
-      encodedParams
-    );
-    console.log("WORKED");
-    res.json({ access_token: response.data.access_token });
-  } catch (error) {
-    console.log(error);
-    res.json("DIDNT WORK :-(, this is because ... >>>" + `${error.message}`);
   }
 });
 

@@ -6,10 +6,5 @@ interface AccessTokenResponse {
 }
 
 export const getAccessToken = async (): Promise<AccessTokenResponse | void> => {
-  const response = await axios.get('http://localhost:3069/gettoken');
-  return response;
+  return await axios.get('http://localhost:3008/gettoken');
 };
-
-// export const isTokenValid = (accessToken: string) =>  {
-
-// };

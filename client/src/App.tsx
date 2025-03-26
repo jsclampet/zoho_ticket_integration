@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useEffect } from "react";
 import { getAccessToken } from "./utilities/tokens";
+import dayjs from "dayjs";
+import axios from "axios";
 
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -8,46 +9,74 @@ import Modal from "react-bootstrap/Modal";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Spinner from "react-bootstrap/Spinner";
-import { LuTicket } from "react-icons/lu";
+import { BsTicket } from "react-icons/bs";
 import "./App.css";
 
-function App() {
-  useEffect(() => {
-    async function getAuth() {
-      try {
-        const response = await getAccessToken();
-        const tokenData = response.data;
-        await localStorage.setItem("authtoken", JSON.stringify(tokenData));
-        console.log(response);
-        console.log(localStorage.getItem("authtoken"));
-        setIsAuth(true);
-      } catch (error) {
-        setIsAuth(false);
-        console.log(error);
-      }
-    }
-    getAuth();
-  }, []);
+type AccessToken = {
+  access_token: string;
+  created_time: string;
+  expiry_time: string;
+};
 
+function App() {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+
+  const ensureValidToken = async () => {
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      const accessToken: AccessToken | null = storedToken
+        ? JSON.parse(storedToken)
+        : null;
+      if (accessToken && dayjs(accessToken.expiry_time).isAfter(dayjs())) {
+        setIsAuth(true);
+        console.log("Access Token already exist and non-expired");
+        return;
+      } else {
+        const response = await getAccessToken();
+        const tokenData = response.data;
+        localStorage.setItem("accessToken", JSON.stringify(tokenData));
+        console.log(response);
+        console.log(
+          "***CREATED ACCESS TOKEN",
+          localStorage.getItem("accessToken")
+        );
+        setIsAuth(true);
+      }
+    } catch (error) {
+      setIsAuth(false);
+      console.error("Error in ensureValidToken():", error);
+    }
+  };
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    const response = await getAccessToken();
-    console.log(response);
+    await ensureValidToken();
     setIsLoading(false);
+    try {
+      const ticketResponse = await axios.post(
+        "http://localhost:3008/create_request",
+        {
+          auth: localStorage.getItem("accessToken"),
+        }
+      );
+      console.log(ticketResponse);
+    } catch (error) {
+      console.log(error.message);
+    }
+
+    console.log(ticketResponse);
     handleClose();
   };
 
   return (
     <>
-      <Button variant="warning" onClick={handleShow}>
-        <LuTicket />
+      <Button variant="warning" className="sdp-btn-icon" onClick={handleShow}>
+        <BsTicket className="sdp-btn-icon" />
       </Button>
       <Modal show={show} onHide={handleClose} size="lg">
         <Modal.Header closeButton>
@@ -93,23 +122,15 @@ function App() {
             </Row>
 
             <Form.Group className="mb-3" controlId="ticket.subject">
-              <Form.Label>Issue or Request</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Example: 'I am having issues logging into the DMS'"
-                autoFocus
-              />
+              <Form.Label>Subject</Form.Label>
+              <Form.Control type="text" autoFocus />
             </Form.Group>
             <Form.Group className="mb-3" controlId="ticket.description">
               <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                placeholder="Please provide all relevant details and specifics."
-                rows={4}
-              />
+              <Form.Control as="textarea" rows={4} />
             </Form.Group>
             <Form.Group controlId="formFileMultiple" className="mb-3">
-              <Form.Label>Multiple files input example</Form.Label>
+              <Form.Label></Form.Label>
               <Form.Control type="file" multiple />
             </Form.Group>
           </Form>

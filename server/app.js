@@ -15,7 +15,7 @@ const access_token_params = new URLSearchParams({
   refresh_token,
   grant_type: "refresh_token",
   client_id: process.env.CLIENT_ID,
-  client_secret: "adaede72d84a442a9561ddf32238c699f8d2c897a5",
+  client_secret: process.env.CLIENT_SECRET,
   redirect_uri: "https://www.zoho.com",
   scope: "SDPOnDemand.requests.ALL",
 });
@@ -41,37 +41,56 @@ app.get("/getToken", async (req, res) => {
       created_time,
       expiry_time,
     });
-  } catch (err) {
-    console.log(err);
-    res.status(400).json({ error_message: err.message, status: err.status });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Request failed",
+      details: error?.response?.data || error.message,
+    });
   }
 });
 
 app.post("/create_request", async (req, res) => {
-  const url = "https://sdpondemand.manageengine.com/app/itdesk/api/v3/requests"; // Replace with your actual SDP domain
-  const auth = JSON.parse(req.body.auth).access_token;
+  const url = "https://sdpondemand.manageengine.com/app/itdesk/api/v3/requests";
+  const auth = req.body.auth;
   const headers = {
     Accept: "application/vnd.manageengine.sdp.v3+json",
     "Content-Type": "application/x-www-form-urlencoded",
     Authorization: `Zoho-oauthtoken ${auth}`,
   };
-  const input_data = {
-    request: {
-      subject: "Test ticket created from API",
-    },
+
+  const postData = {
+    input_data: JSON.stringify({
+      request: {
+        subject: "Test ticket created from API",
+        category: {
+          name: "MFA",
+        },
+        status: {
+          name: "Open",
+        },
+      },
+    }),
   };
-  const postData = qs.stringify({
-    input_data: JSON.stringify(input_data),
-  });
+
   try {
-    console.log(auth);
-    const response = await axios.post(url, postData, { headers });
-    console.log(response);
-    res.send(response);
+    const response = await axios.post(url, qs.stringify(postData), { headers });
+    console.log("Ticket Created:", response.data.request.display_id);
+    res.status(200).json(response.data);
   } catch (error) {
-    console.log(error);
-    console.log(error.message);
-    res.status(400).send(error);
+    if (error.response) {
+      console.error("API Error:", error.response.data);
+    } else {
+      console.error("Unhandled Error:", error.message);
+    }
+    const messages = error?.response?.data?.response_status?.messages;
+
+    res.status(500).json({
+      message: "Request failed",
+      details: messages?.length
+        ? messages
+        : error.response?.data || error.message,
+    });
   }
 });
 

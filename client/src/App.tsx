@@ -56,20 +56,20 @@ function App() {
   const handleSubmit = async () => {
     setIsLoading(true);
     await ensureValidToken();
-    setIsLoading(false);
     try {
+      const stored_token = localStorage.getItem("accessToken");
+      const auth = JSON.parse(stored_token).access_token;
+
       const ticketResponse = await axios.post(
         "http://localhost:3008/create_request",
-        {
-          auth: localStorage.getItem("accessToken"),
-        }
+        { auth }
       );
+
       console.log(ticketResponse);
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
     }
-
-    console.log(ticketResponse);
+    setIsLoading(false);
     handleClose();
   };
 
